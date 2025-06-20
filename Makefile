@@ -1,12 +1,30 @@
-.PHONY: install dev test lint format clean serve
+.PHONY: install install-pip dev test lint format clean serve setup
 
-# Install dependencies
+# Install dependencies using uv (recommended)
 install:
 	uv sync
+
+# Install dependencies using pip
+install-pip:
+	pip install -r requirements.txt
 
 # Install with dev dependencies
 dev:
 	uv sync --dev
+
+# Install dev dependencies with pip
+dev-pip:
+	pip install -r requirements.txt -r requirements-dev.txt
+
+# Setup project (copy .env.example to .env)
+setup:
+	@if [ ! -f .env ]; then \
+		cp .env.example .env; \
+		echo "✅ Created .env file from .env.example"; \
+		echo "📝 Please edit .env with your API keys"; \
+	else \
+		echo "⚠️  .env file already exists"; \
+	fi
 
 # Run tests
 test:

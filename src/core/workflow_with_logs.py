@@ -1,4 +1,4 @@
-"""LangGraph workflow for LangManus Demo."""
+"""LangGraph workflow for LangManus Demo with detailed logging."""
 
 from typing import TypedDict, Dict, Any, List
 from langgraph.graph import StateGraph, START, END
@@ -298,45 +298,50 @@ def reporter_node(state: WorkflowState) -> WorkflowState:
                 f"- **Name:** {metadata.get('name', 'N/A')}",
                 f"- **Description:** {metadata.get('description', 'N/A')}",
                 f"- **Language:** {metadata.get('language', 'N/A')}",
-                f"- **Stars:** {metadata.get('stars', 0)}",
-                f"- **Forks:** {metadata.get('forks', 0)}",
+                f"- **Stars:** {metadata.get('stargazers_count', 'N/A')}",
+                f"- **Forks:** {metadata.get('forks_count', 'N/A')}",
                 f""
             ])
         
-        report_parts.extend([
-            f"## 📝 Recent Commits:",
-            f""
-        ])
+        # Add recent commits
+        commits = repo_data.get('commits', [])
+        if commits:
+            report_parts.extend([
+                f"## 📝 Recent Commits:",
+                f""
+            ])
+            for commit in commits[:10]:  # Show last 10 commits
+                report_parts.append(f"- [{commit.get('sha', 'N/A')[:7]}] {commit.get('message', 'N/A')}")
+            report_parts.append("")
         
-        for commit in repo_data.get('commits', [])[:10]:
-            report_parts.append(f"- {commit}")
-            
-        report_parts.extend([
-            f"",
-            f"## 🔍 Analysis:",
-            f""
-        ])
+        # Add analysis results
+        if analysis:
+            report_parts.extend([
+                f"## 🔍 Analysis:",
+                f""
+            ])
+            for item in analysis:
+                report_parts.append(item)
+            report_parts.append("")
         
-        for line in analysis:
-            report_parts.append(line)
-            
+        # Add chart information
         if chart_paths:
             report_parts.extend([
-                f"",
                 f"## 📊 Generated Charts:",
                 f""
             ])
             for chart_path in chart_paths:
-                chart_name = chart_path.split('/')[-1].replace('_', ' ').replace('.png', '').title()
-                report_parts.append(f"- {chart_name}: `{chart_path}`")
+                report_parts.append(f"- {chart_path}")
+            report_parts.append("")
         
+        # Generate final report
         report = "\n".join(report_parts)
         state["report"] = report
         
         print("💭 Reporter is synthesizing the final report...")
         messages = [
             SystemMessage(content=prompt),
-            HumanMessage(content="Generated comprehensive repository analysis report")
+            HumanMessage(content=f"Generate a comprehensive report for the analysis of {state['repo_url']}")
         ]
         
         response = basic_llm.invoke(messages)
@@ -346,7 +351,7 @@ def reporter_node(state: WorkflowState) -> WorkflowState:
         
         state["messages"].append({
             "agent": "reporter",
-            "content": f"Generated final report\n\nSummary: {response.content}",
+            "content": "Final report generated",
             "timestamp": "now"
         })
         
@@ -385,4 +390,21 @@ def create_workflow() -> StateGraph:
     workflow.add_edge("coder", "reporter")
     workflow.add_edge("reporter", END)
     
-    return workflow.compile() 
+    return workflow.compile()
+
+
+def create_github_workflow() -> StateGraph:
+    """Create workflow with GitHub tools injected.
+    
+    This is a convenience function that demonstrates how to inject
+    business-specific tools into the generic workflow.
+    """
+    # Import GitHub tools only when needed
+    from src.tools.github_tools import find_trending_repo, scrape_github_activity
+    from src.tools.analysis_tools import analyze_code_activity
+    
+    workflow = create_workflow()
+    
+    # This workflow pre-configures the GitHub tools
+    # In practice, tools would be injected at runtime
+    return workflow 

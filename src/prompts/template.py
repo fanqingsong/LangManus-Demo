@@ -29,7 +29,7 @@ class PromptTemplate:
             'current_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'team_members': ", ".join([
                 "coordinator", "planner", "supervisor", 
-                "researcher", "coder", "browser", "reporter"
+                "researcher", "coder", "browser", "reporter", "file_manager"
             ]),
             **kwargs
         }
@@ -42,5 +42,30 @@ class PromptTemplate:
         return template
 
 
+def apply_prompt_template(agent_name: str, state: Dict[str, Any]) -> str:
+    """Apply prompt template for an agent with state context.
+    
+    Args:
+        agent_name: Name of the agent 
+        state: Current workflow state
+        
+    Returns:
+        Formatted prompt string
+    """
+    return prompt_template.load_prompt(agent_name, **state)
+
+
 # Global template instance
 prompt_template = PromptTemplate() 
+
+def apply_prompt_template(agent_name: str, state: Dict[str, Any]) -> str:
+    """Apply prompt template for an agent with state context.
+    
+    Args:
+        agent_name: Name of the agent 
+        state: Current workflow state
+        
+    Returns:
+        Formatted prompt string
+    """
+    return prompt_template.load_prompt(agent_name, **state)

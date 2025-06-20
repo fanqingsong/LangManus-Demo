@@ -8,8 +8,21 @@ TEAM_MEMBERS = [
     "researcher",
     "coder",
     "browser",
-    "reporter"
+    "reporter",
+    "file_manager"
 ]
+
+# Agent LLM mapping - defines which LLM type each agent uses
+AGENT_LLM_MAP = {
+    "coordinator": "basic",
+    "planner": "reasoning", 
+    "supervisor": "basic",
+    "researcher": "basic",
+    "coder": "basic",
+    "browser": "basic",
+    "reporter": "basic",
+    "file_manager": "basic"
+}
 
 # Agent timeouts (in seconds)
 AGENT_TIMEOUT = 300

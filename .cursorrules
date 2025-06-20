@@ -1,0 +1,132 @@
+# LangManus Demo - Cursor IDE Rules Configuration
+# Project: LangManus Generic Multi-Agent Framework Demo
+# Work Path: /home/song/workspace/me/LangManus-Demo
+
+## Project Information
+- **Project Name**: LangManus-Demo
+- **Framework**: Generic Multi-Agent Framework with Tool Injection
+- **Work Directory**: /home/song/workspace/me/LangManus-Demo
+- **Environment**: WSL2 Ubuntu (linux 6.6.87.2-microsoft-standard-WSL2)
+- **Python Version**: 3.12+
+- **Package Manager**: uv (preferred), pip (fallback)
+
+## Project Structure
+```
+/home/song/workspace/me/LangManus-Demo/
+├── src/                    # Source code
+│   ├── agents/            # Agent definitions
+│   ├── config/            # Configuration files
+│   ├── core/              # Core framework
+│   ├── prompts/           # Generic prompts
+│   └── tools/             # Business tools
+├── tests/                 # Test files
+├── .env                   # Environment variables
+├── .env.example          # Environment template
+├── pyproject.toml        # Project configuration
+├── requirements.txt      # Pip dependencies
+└── README.md             # Documentation
+```
+
+## Development Guidelines
+
+### 1. Architecture Principles
+- **Generic Framework**: Keep prompts business-agnostic
+- **Tool Injection**: Business logic goes in tools, not prompts
+- **Clean Separation**: Framework logic separate from business logic
+- **Modularity**: Each tool should be independently testable
+
+### 2. Code Style
+- Use Python 3.12+ features
+- Follow PEP 8 style guide
+- Use type hints where appropriate
+- Prefer composition over inheritance
+
+### 3. Tool Development
+- Core tools (no external deps): `src/tools/python_tools.py`, `file_tools.py`, `bash_tool.py`
+- Optional tools (external deps): `github_tools.py`, `browser_tools.py`, `analysis_tools.py`
+- Use optional imports with graceful fallbacks
+- Provide helpful error messages for missing dependencies
+
+### 4. Environment Configuration
+- Primary LLM: Alibaba Dashscope (qwen models)
+- Alternative: OpenAI API
+- Search: Tavily API (free tier: 1000 searches/month)
+- GitHub: Personal Access Token for API access
+
+### 5. Common Commands
+```bash
+# Setup project
+make install && make setup
+
+# Development
+make dev
+make test
+make lint
+make format
+
+# Run applications
+python3 demo_offline.py     # No API keys needed
+uv run main.py             # Full functionality (needs API keys)
+streamlit run streamlit_app.py
+python3 server.py
+```
+
+### 6. Dependencies Management
+- **Core**: No external dependencies required
+- **Optional**: beautifulsoup4, requests, matplotlib, tavily-python
+- **LLM**: langchain-openai, langchain-community
+- **Web**: streamlit, fastapi, uvicorn
+
+### 7. API Configuration Template
+```env
+# LLM Environment variables
+REASONING_API_KEY=sk-xxx
+REASONING_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+REASONING_MODEL=qwq-plus
+
+BASIC_API_KEY=sk-xxx
+BASIC_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+BASIC_MODEL=qwen-max-latest
+
+VL_API_KEY=sk-xxx
+VL_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+VL_MODEL=qwen2.5-vl-72b-instruct
+
+TAVILY_API_KEY=tvly-xxx
+DEBUG=True
+APP_ENV=development
+```
+
+### 8. Testing Strategy
+- Core functionality: `python3 quick_test.py`
+- Tool availability: `python3 -c "from tools import check_tool_availability; check_tool_availability()"`
+- Full demo: `python3 demo_offline.py` (no API) or `uv run main.py` (with API)
+
+### 9. Troubleshooting
+- **Import Errors**: Check optional dependencies, use `demo_offline.py` for core functionality
+- **API Errors**: Verify API keys in `.env`, check rate limits
+- **Tool Errors**: Run tool availability check, install missing dependencies
+
+### 10. File Patterns to Focus On
+- `src/tools/*.py` - Business logic implementation
+- `src/prompts/*.md` - Generic agent prompts
+- `src/config/*.py` - Configuration management
+- `src/core/*.py` - Framework core functionality
+- `*.py` in root - Demo and application scripts
+
+## AI Assistant Instructions
+When working on this project:
+1. Always maintain the generic framework principle
+2. Put business logic in tools, not prompts
+3. Use optional imports for external dependencies
+4. Test both with and without API keys
+5. Follow the established project structure
+6. Update documentation when adding new features
+
+## Project Status
+- ✅ Framework aligned with official langmanus repository
+- ✅ Core tools working without external dependencies
+- ✅ Optional tools with graceful fallbacks
+- ✅ Comprehensive environment configuration
+- ✅ Multiple installation and usage options
+- ✅ Clean architecture demonstration 

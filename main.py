@@ -4,7 +4,8 @@ from src.main_app import LangManusAgent
 
 if __name__ == '__main__':
     # Use the new LangManus-powered agent
-    agent = LangManusAgent(task="Find a popular open-source project updated recently and summarize its new features with examples and charts.")
+    # agent = LangManusAgent(task="Find a popular open-source project updated recently and summarize its new features with examples and charts.")
+    agent = LangManusAgent(task="Find a popular open-source project updated recently and summarize its new features with examples and charts, finally save the summary into file.")
     result = agent.run()
     
     if result.get("error"):

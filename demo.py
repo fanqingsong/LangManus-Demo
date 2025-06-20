@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-LangManus Demo - GitHub Repository Analyzer
+LangManus Demo - Generic Multi-Agent Framework
 
-This script demonstrates the LangManus framework capabilities by analyzing
-a GitHub repository using a multi-agent system.
+This script demonstrates the LangManus framework's generic design with dynamic tool injection.
+It shows how business-specific tools (like GitHub tools) can be injected into the framework
+without polluting the core agent prompts.
 """
 
 import logging
-from src.main_app import LangManusAgent
+from src.main_app import LangManusAgent, GitHubAnalysisAgent
 from src.tools.github_tools import find_trending_repo
 from src.tools.analysis_tools import categorize_commit, analyze_code_activity
 
@@ -19,116 +20,158 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def demo_basic_tools():
-    """Demonstrate basic tool functionality."""
-    print("🔧 === LangManus Basic Tools Demo ===")
+def demo_generic_framework():
+    """Demonstrate the generic LangManus framework without business tools."""
+    print("🧠 === Generic LangManus Framework Demo ===")
     
-    # Test commit categorization
-    print("\n📊 Commit Categorization:")
-    test_commits = [
-        "fix: resolve memory leak in data processing",
-        "feat: implement user authentication system", 
-        "docs: add comprehensive API documentation",
-        "refactor: optimize database queries",
-        "test: add unit tests for core functionality"
-    ]
+    # Create a generic agent without any business-specific tools
+    generic_agent = LangManusAgent(
+        task="Analyze the concept of artificial intelligence and its impact on society"
+    )
     
-    for commit in test_commits:
-        category = categorize_commit(commit)
-        print(f"  • {commit} → {category}")
+    print(f"✅ Generic Agent Created")
+    print(f"   Task: {generic_agent.task}")
+    print(f"   Tools: {list(generic_agent.tools.keys()) if generic_agent.tools else 'None (generic framework)'}")
+    print(f"   Prompts: Generic, business-agnostic agent prompts")
     
-    # Test repo finding (with fallback)
-    print(f"\n🔍 Repository Discovery:")
-    try:
-        repo_url = find_trending_repo()
-        print(f"  • Found trending repository: {repo_url}")
-    except Exception as e:
-        print(f"  • Error accessing GitHub (expected in demo): {str(e)[:100]}...")
+    # Note: This would work with any LLM configuration
 
 
-def demo_mock_analysis():
-    """Demonstrate analysis with mock data."""
-    print("\n📈 === Analysis Demo with Mock Data ===")
+def demo_tool_injection():
+    """Demonstrate dynamic tool injection for specific business needs."""
+    print("\n🔧 === Tool Injection Demo ===")
     
-    # Mock repository data
-    mock_repo_data = {
-        'repo_url': 'https://github.com/example/awesome-python-project',
-        'commits': [
-            '[abc123] feat: add new ML model training pipeline — Alice @ 2024-01-15T10:30:00Z',
-            '[def456] fix: resolve memory leak in data loader — Bob @ 2024-01-14T16:45:00Z',
-            '[ghi789] docs: update installation instructions — Charlie @ 2024-01-13T09:15:00Z',
-            '[jkl012] feat: implement real-time data streaming — Alice @ 2024-01-12T14:20:00Z',
-            '[mno345] test: add comprehensive unit tests — David @ 2024-01-11T11:30:00Z'
-        ],
-        'commit_dates': [
-            '2024-01-15T10:30:00Z',
-            '2024-01-14T16:45:00Z', 
-            '2024-01-13T09:15:00Z',
-            '2024-01-12T14:20:00Z',
-            '2024-01-11T11:30:00Z'
-        ],
-        'metadata': {
-            'name': 'awesome-python-project',
-            'description': 'A modern ML pipeline with real-time capabilities',
-            'language': 'Python',
-            'stars': 1234,
-            'forks': 567
-        }
+    # Define custom business tools
+    def analyze_text(data):
+        """Custom text analysis tool."""
+        return ["Text analysis completed"], ["analysis_report.txt"]
+    
+    def fetch_data(source):
+        """Custom data fetching tool."""
+        return {"source": source, "data": "Sample data from " + source}
+    
+    # Also demonstrate using built-in tools
+    from src.tools.python_tools import execute_python_code
+    from src.tools.file_tools import write_file, save_report
+    from src.tools.bash_tool import execute_bash_command
+    from src.tools.crawl import crawl_single_page
+    
+    # Inject comprehensive tools into the framework
+    custom_tools = {
+        # Custom business tools
+        "analyze_text": analyze_text,
+        "fetch_data": fetch_data,
+        
+        # Built-in tools from LangManus
+        "execute_python_code": execute_python_code,
+        "write_file": write_file,
+        "save_report": save_report,
+        "execute_bash_command": execute_bash_command,
+        "crawl_single_page": crawl_single_page
     }
     
-    # Perform analysis
-    analysis, chart_paths = analyze_code_activity(mock_repo_data)
+    custom_agent = LangManusAgent(
+        task="Analyze text data from various sources and save results",
+        tools=custom_tools
+    )
     
-    print("\n📊 Analysis Results:")
-    for line in analysis:
-        print(f"  {line}")
-        
-    if chart_paths:
-        print(f"\n📈 Generated Charts:")
-        for chart_path in chart_paths:
-            print(f"  • {chart_path}")
-    else:
-        print("\n📈 Charts: None generated (display/file system limitations)")
+    print(f"✅ Custom Agent Created with Comprehensive Tool Injection")
+    print(f"   Available tools: {list(custom_agent.tools.keys())}")
+    print(f"   Framework: Same generic LangManus framework")
+    print(f"   Prompts: Same generic prompts, tools provide business logic")
+    print(f"   Built-in Tools: Python execution, file management, reporting")
+    print(f"   Additional Tools: Bash execution, web crawling")
 
 
-def demo_langmanus_agent():
-    """Demonstrate the full LangManus agent (without API keys)."""
-    print("\n🤖 === LangManus Agent Demo ===")
+def demo_github_business_agent():
+    """Demonstrate pre-configured GitHub business agent."""
+    print("\n📊 === GitHub Business Agent Demo ===")
     
-    # Note: This will fail without proper API keys, but shows structure
-    print("Initializing LangManus Agent...")
-    agent = LangManusAgent(task="Analyze a trending GitHub repository")
+    # Create a GitHub-specific agent (convenience class)
+    github_agent = GitHubAnalysisAgent()
     
-    print("✅ Agent initialized with LangManus framework")
-    print("📋 Configured agents: Coordinator, Planner, Supervisor, Researcher, Browser, Coder, Reporter")
-    print("🔧 Available tools: GitHub API, Analysis tools, Search capabilities")
-    print("💬 Prompt system: Loaded with specialized agent prompts")
-    print("🔄 Workflow: LangGraph-based multi-agent coordination")
+    print(f"✅ GitHub Analysis Agent Created")
+    print(f"   Task: {github_agent.task}")
+    print(f"   Tools: {list(github_agent.tools.keys())}")
+    print(f"   Framework: Same generic LangManus framework")
+    print(f"   Business Logic: Provided by injected GitHub tools")
     
-    print("\n⚠️  Note: Full execution requires API keys (OpenAI, GitHub, etc.)")
-    print("   Configure .env file with your API keys to run complete workflow")
+    # Test GitHub tools separately
+    print(f"\n🔧 Testing GitHub Tools:")
+    try:
+        repo_url = find_trending_repo()
+        print(f"   • GitHub tool working: {repo_url}")
+    except Exception as e:
+        print(f"   • GitHub tool demo (no API): {str(e)[:50]}...")
+
+
+def demo_framework_architecture():
+    """Demonstrate the clean architecture separation."""
+    print("\n🏗️ === Framework Architecture Demo ===")
+    
+    print("📋 LangManus Architecture:")
+    print("   ┌─────────────────────────────────────┐")
+    print("   │        Generic Framework            │")
+    print("   │  ┌─────────────────────────────┐    │")
+    print("   │  │    Generic Prompts          │    │")
+    print("   │  │  • Coordinator              │    │")
+    print("   │  │  • Planner                  │    │")
+    print("   │  │  • Researcher               │    │")
+    print("   │  │  • Browser                  │    │")
+    print("   │  │  • Coder                    │    │")
+    print("   │  │  • Reporter                 │    │")
+    print("   │  │  • File Manager             │    │")
+    print("   │  └─────────────────────────────┘    │")
+    print("   │                │                    │")
+    print("   │        ┌───────▼──────┐             │")
+    print("   │        │ Tool Injection│             │")
+    print("   │        └───────┬──────┘             │")
+    print("   └────────────────┼──────────────────────┘")
+    print("                    │")
+    print("   ┌────────────────▼──────────────────────┐")
+    print("   │        Business Tools                 │")
+    print("   │  • GitHub API Tools                   │")
+    print("   │  • Python Execution Tools             │")
+    print("   │  • Bash Execution Tools               │")
+    print("   │  • File Management Tools              │")
+    print("   │  • Web Crawling Tools                 │")
+    print("   │  • Custom Business Tools              │")
+    print("   └───────────────────────────────────────┘")
+    
+    print("\n✅ Key Design Principles:")
+    print("   • Prompts are generic and business-agnostic")
+    print("   • Business logic is contained in tools")
+    print("   • Tools are injected dynamically at runtime")
+    print("   • Framework can work with any domain-specific tools")
+    print("   • Clean separation between framework and business logic")
 
 
 def main():
-    """Run the complete LangManus demo."""
-    print("🧠 === LangManus Framework Demo ===")
-    print("A sophisticated multi-agent system for GitHub repository analysis\n")
+    """Run the complete LangManus architecture demo."""
+    print("🚀 === LangManus Framework Architecture Demo ===")
+    print("Demonstrating generic framework design with dynamic tool injection\n")
     
     try:
         # Run demonstrations
-        demo_basic_tools()
-        demo_mock_analysis()
-        demo_langmanus_agent()
+        demo_generic_framework()
+        demo_tool_injection()
+        demo_github_business_agent()
+        demo_framework_architecture()
         
         print("\n🎉 === Demo Complete ===")
-        print("✅ LangManus framework successfully integrated!")
-        print("🚀 Ready for production use with proper API configuration")
+        print("🏗️  Generic framework + Dynamic tool injection = Flexible AI system")
         
-        print(f"\n📚 Next Steps:")
-        print(f"  1. Configure API keys in .env file")
-        print(f"  2. Run: make run (for CLI)")
-        print(f"  3. Run: make streamlit (for web UI)")
-        print(f"  4. Run: make serve (for API server)")
+        print(f"\n📚 Key Benefits:")
+        print(f"  • Framework remains domain-agnostic")
+        print(f"  • Prompts are reusable across different business domains")
+        print(f"  • Tools provide business-specific functionality")
+        print(f"  • Easy to add new business domains without changing core framework")
+        print(f"  • Clean separation of concerns")
+        
+        print(f"\n🔧 Usage Examples:")
+        print(f"  • GitHub Analysis: GitHubAnalysisAgent()")
+        print(f"  • Custom Business: LangManusAgent(tools=custom_tools)")
+        print(f"  • Generic Analysis: LangManusAgent(task='analyze topic')")
         
     except Exception as e:
         logger.error(f"Demo failed: {e}")

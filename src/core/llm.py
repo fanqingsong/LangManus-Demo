@@ -52,6 +52,30 @@ def create_llm(llm_type: LLMType, temperature: float = 0.7) -> Optional[ChatOpen
         return None
 
 
+def get_llm_by_type(llm_type_name: str, temperature: float = 0.7) -> Optional[ChatOpenAI]:
+    """Get LLM instance by type name.
+    
+    Args:
+        llm_type_name: String name of LLM type ("reasoning", "basic", "vision_language")
+        temperature: Temperature setting for the LLM
+        
+    Returns:
+        ChatOpenAI instance or None if configuration is missing
+    """
+    type_mapping = {
+        "reasoning": LLMType.REASONING,
+        "basic": LLMType.BASIC,
+        "vision_language": LLMType.VISION_LANGUAGE
+    }
+    
+    llm_type = type_mapping.get(llm_type_name)
+    if not llm_type:
+        logger.error(f"Unknown LLM type name: {llm_type_name}")
+        return None
+        
+    return create_llm(llm_type, temperature)
+
+
 # Create default LLM instances
 reasoning_llm = create_llm(LLMType.REASONING)
 basic_llm = create_llm(LLMType.BASIC)
