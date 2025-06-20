@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Pre-commit hook for LangManus Demo
+# This script runs linting and formatting checks before each commit
+
+echo "Running pre-commit checks..."
+
+# Change to the repository root
+cd "$(git rev-parse --show-toplevel)"
+
+# Run linting
+echo "Running linting checks..."
+if ! make lint; then
+    echo "❌ Linting failed. Please fix the issues before committing."
+    exit 1
+fi
+
+# Run formatting
+echo "Running code formatting..."
+if ! make format; then
+    echo "❌ Formatting failed. Please fix the issues before committing."
+    exit 1
+fi
+
+# Add any reformatted files back to staging
+git add -u
+
+echo "✅ Pre-commit checks passed!"
+exit 0 
