@@ -130,3 +130,10 @@ When working on this project:
 - ✅ Comprehensive environment configuration
 - ✅ Multiple installation and usage options
 - ✅ Clean architecture demonstration 
+
+## 运行环境要求
+- 所有本地开发、测试、运行脚本前，需先激活虚拟环境：
+  ```bash
+  source .venv/bin/activate
+  ```
+- 确保依赖和环境变量均在虚拟环境下生效。 

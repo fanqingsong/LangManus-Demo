@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  # API Service (FastAPI)
+  langmanus-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8008:8000"
+    environment:
+      - DEBUG=True
+      - APP_ENV=production
+    env_file:
+      - .env
+    volumes:
+      - ./output:/app/output
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Web Service (Streamlit)
+  langmanus-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8502:8501"
+    environment:
+      - DEBUG=True
+      - APP_ENV=production
+    env_file:
+      - .env
+    volumes:
+      - ./output:/app/output
+    command: ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    restart: unless-stopped
+
+  # # Development Service
+  # langmanus-dev:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8001:8000"
+  #     - "8502:8501"
+  #   environment:
+  #     - DEBUG=True
+  #     - APP_ENV=development
+  #   volumes:
+  #     - .:/app
+  #     - ./output:/app/output
+  #   command: ["python", "demo_offline.py"]
+  #   restart: unless-stopped
+
+  # # CLI Service
+  # langmanus-cli:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     - DEBUG=True
+  #     - APP_ENV=production
+  #   volumes:
+  #     - ./output:/app/output
+  #   command: ["python", "main.py"]
+  #   restart: "no"
+
+  # # Offline Demo Service
+  # langmanus-offline:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8002:8000"
+  #   environment:
+  #     - DEBUG=True
+  #     - APP_ENV=offline
+  #   volumes:
+  #     - ./output:/app/output
+  #   command: ["python", "demo_offline.py"]
+  #   restart: unless-stopped
+
+  # Simple Service (No system dependencies)
+  # langmanus-simple:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.simple
+  #   ports:
+  #     - "8003:8000"
+  #   environment:
+  #     - DEBUG=True
+  #     - APP_ENV=offline
+  #   volumes:
+  #     - ./output:/app/output
+  #   command: ["python", "demo_offline.py"]
+  #   restart: unless-stopped
+
+  # Alternative Services with different mirrors
+  # langmanus-aliyun:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8004:8000"
+  #   environment:
+  #     - DEBUG=True
+  #     - APP_ENV=production
+  #   volumes:
+  #     - ./output:/app/output
+  #   command: ["python", "demo_offline.py"]
+  #   restart: unless-stopped
+
+  # langmanus-tencent:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.tencent
+  #   ports:
+  #     - "8005:8000"
+  #   environment:
+  #     - DEBUG=True
+  #     - APP_ENV=production
+  #   volumes:
+  #     - ./output:/app/output
+  #   command: ["python", "demo_offline.py"]
+  #   restart: unless-stopped
+
+  # langmanus-netease:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.netease
+  #   ports:
+  #     - "8006:8000"
+  #   environment:
+  #     - DEBUG=True
+  #     - APP_ENV=production
+  #   volumes:
+  #     - ./output:/app/output
+  #   command: ["python", "demo_offline.py"]
+  #   restart: unless-stopped
+
+volumes:
+  output: 

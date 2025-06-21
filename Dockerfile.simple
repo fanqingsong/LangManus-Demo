@@ -1,0 +1,57 @@
+# LangManus Demo Dockerfile - Simple Version
+# Minimal build without system dependencies
+
+# Stage 1: Build stage
+FROM python:3.11-slim AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies using pip with Chinese mirror
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ --upgrade pip
+
+# Copy dependency files
+COPY pyproject.toml uv.lock requirements.txt ./
+
+# Install dependencies using pip
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r requirements.txt
+
+# Stage 2: Production stage
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Create non-root user
+RUN groupadd -r langmanus && useradd -r -g langmanus langmanus
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python packages from builder stage
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy application code
+COPY . .
+
+# Create necessary directories with proper permissions
+RUN mkdir -p output/charts output/logs output/reports && \
+    mkdir -p /home/langmanus/.config /home/langmanus/.streamlit && \
+    chown -R langmanus:langmanus /app && \
+    chown -R langmanus:langmanus /home/langmanus
+
+# Switch to non-root user
+USER langmanus
+
+# Set home directory for the user
+ENV HOME=/home/langmanus
+
+# Expose ports
+EXPOSE 8000 8501
+
+# Default command
+CMD ["python", "demo_offline.py"] 

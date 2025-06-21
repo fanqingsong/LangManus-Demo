@@ -1,0 +1,84 @@
+# LangManus Demo Dockerfile - Tencent Mirror
+# Multi-stage build for optimized production image
+
+# Stage 1: Build stage
+FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/python:3.11-slim AS builder
+
+# Set working directory
+WORKDIR /app
+
+# # Configure apt sources with Tencent mirrors for faster installation
+# RUN rm -f /etc/apt/sources.list.d/* && \
+#     echo "deb https://mirrors.cloud.tencent.com/debian/ bookworm main contrib non-free non-free-firmware" > /etc/apt/sources.list && \
+#     echo "deb https://mirrors.cloud.tencent.com/debian/ bookworm-updates main contrib non-free non-free-firmware" >> /etc/apt/sources.list && \
+#     echo "deb https://mirrors.cloud.tencent.com/debian/ bookworm-backports main contrib non-free non-free-firmware" >> /etc/apt/sources.list && \
+#     echo "deb https://mirrors.cloud.tencent.com/debian-security bookworm-security main contrib non-free non-free-firmware" >> /etc/apt/sources.list
+
+# # Install system dependencies
+# RUN apt-get update && apt-get install -y \
+#     gcc \
+#     g++ \
+#     curl \
+#     && rm -rf /var/lib/apt/lists/*
+
+# Install uv for faster dependency management with Chinese mirror
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ uv
+
+# Copy dependency files
+COPY pyproject.toml uv.lock requirements.txt ./
+
+# Install dependencies using uv with Chinese mirror
+RUN uv sync --frozen --no-dev --index-url https://pypi.tuna.tsinghua.edu.cn/simple/
+
+# Stage 2: Production stage
+FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Create non-root user
+RUN groupadd -r langmanus && useradd -r -g langmanus langmanus
+
+# Set working directory
+WORKDIR /app
+
+# Configure apt sources with Tencent mirrors for faster installation
+RUN rm -f /etc/apt/sources.list.d/* && \
+    echo "deb https://mirrors.cloud.tencent.com/debian/ bookworm main contrib non-free non-free-firmware" > /etc/apt/sources.list && \
+    echo "deb https://mirrors.cloud.tencent.com/debian/ bookworm-updates main contrib non-free non-free-firmware" >> /etc/apt/sources.list && \
+    echo "deb https://mirrors.cloud.tencent.com/debian/ bookworm-backports main contrib non-free non-free-firmware" >> /etc/apt/sources.list && \
+    echo "deb https://mirrors.cloud.tencent.com/debian-security bookworm-security main contrib non-free non-free-firmware" >> /etc/apt/sources.list
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Python packages from builder stage
+COPY --from=builder /app/.venv /app/.venv
+
+# Copy application code
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p output/charts output/logs output/reports && \
+    chown -R langmanus:langmanus /app
+
+# Switch to non-root user
+USER langmanus
+
+# Activate virtual environment
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Expose ports
+EXPOSE 8000 8501
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Default command
+CMD ["python", "server.py"] 

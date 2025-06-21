@@ -234,14 +234,49 @@ uvicorn server:app --reload --host 0.0.0.0 --port 8000
 
 ### 5. Docker Deployment (Optional)
 
-```bash
-# Build and run with Docker
-docker build -t langmanus-demo .
-docker run -p 8000:8000 --env-file .env langmanus-demo
+#### 使用 Docker Compose（推荐）
 
-# Or use docker-compose
-docker-compose up -d
+```bash
+# 1. 配置环境变量
+cp .env.example .env
+# 编辑 .env 文件，添加您的 API 密钥
+
+# 2. 构建并启动服务
+docker compose up -d
+
+# 3. 查看服务状态
+docker compose ps
+
+# 4. 查看日志
+docker compose logs -f
 ```
+
+#### 可用的 Docker 服务
+
+- **FastAPI 服务** (端口 8000): `docker compose up langmanus-api`
+- **Streamlit Web 界面** (端口 8501): `docker compose up langmanus-web`
+- **开发模式** (热重载): `docker compose up langmanus-dev`
+- **CLI 演示**: `docker compose run --rm langmanus-cli`
+- **离线演示** (无需 API 密钥): `docker compose run --rm langmanus-offline`
+
+#### 传统 Docker 方式
+
+```bash
+# 构建镜像
+docker build -t langmanus-demo .
+
+# 运行容器
+docker run -p 8000:8000 --env-file .env langmanus-demo
+```
+
+#### 详细说明
+
+- **多阶段构建**: 优化镜像大小和构建速度
+- **健康检查**: 自动监控服务状态
+- **数据持久化**: 输出文件挂载到主机
+- **安全配置**: 非 root 用户运行
+
+详细部署指南请参考 [DOCKER.md](DOCKER.md)
 
 ### 6. Verify Installation
 
